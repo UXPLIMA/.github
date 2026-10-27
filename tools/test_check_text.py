@@ -88,6 +88,10 @@ class CheckTextTest(unittest.TestCase):
         self.write("build.gradle.kts", "# 2026-09-22 note\n")
         self.assertEqual(self.rules(), ["date", "date"])
 
+    def test_quoted_date_example_in_comment_passes(self):
+        self.write("config.conf", '#   start = "2026-11-01 18:00"\n# Write "2026-11-01" here\n')
+        self.assertEqual(self.rules(), [])
+
     def test_date_in_code_string_passes(self):
         self.write("src/A.java", 'class A { String v = "2026-09-22"; }\n')
         self.assertEqual(self.rules(), [])

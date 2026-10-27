@@ -34,6 +34,8 @@ DATE = re.compile(r"\b20\d\d-\d\d-\d\d\b")
 DECISION_ID = re.compile(r"\bADR-\d+\b|\b[DFW]\d{2,}\b")
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 FENCE = re.compile(r"^\s*(```|~~~)")
+# A date inside quotes is an example of a value an operator writes, not a note.
+QUOTED = re.compile(r"\"[^\"]*\"|'[^']*'")
 
 AGENTS_MAX_LINES = 200
 PAGE_MAX_LINES = 400
@@ -161,7 +163,7 @@ def _check_lines(path: str, lines: list[str]) -> list[Finding]:
         if DASH.search(line):
             findings.append(Finding(path, number, "dash", "em or en dash; use a colon, comma or full stop"))
     for number, line in _commentary_lines(path, lines):
-        if DATE.search(line):
+        if DATE.search(QUOTED.sub("", line)):
             findings.append(Finding(path, number, "date", "a date in documentation or a comment; git keeps history"))
         for match in DECISION_ID.finditer(line):
             findings.append(Finding(path, number, "decision-id", f"{match.group(0)}: write the reasoning, not a record number"))
