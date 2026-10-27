@@ -1,0 +1,151 @@
+# The shared CI of every UXPLIMA repository. A repository calls it from its own
+# ci.yml, pinned by commit, as a job named `ci`:
+#
+#   jobs:
+#     ci:
+#       uses: UXPLIMA/.github/.github/workflows/uxm-ci.yml@<sha> # v0.0.1
+#       with:
+#         runner: '["self-hosted","uxplima"]'
+#         scopes: "key reward storage build"
+#         tools-ref: <same sha>
+#
+# Private repositories must run on the self-hosted runner: hosted minutes are
+# billed for them.
+name: uxm-ci
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: JSON list of runner labels.
+        type: string
+        default: '["self-hosted","uxplima"]'
+      gradle:
+        description: Whether the repository has a Gradle build to run.
+        type: boolean
+        default: true
+      java:
+        type: string
+        default: "25"
+      scopes:
+        description: Space separated commit scopes allowed in pull request titles.
+        type: string
+        required: true
+      tools-ref:
+        description: Commit of UXPLIMA/.github whose tools run, the same commit the workflow is pinned to.
+        type: string
+        required: true
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  changes:
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions:
+      contents: read
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" != pull_request ]; then
+            echo "code=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only "$BASE...$HEAD")
+          printf '%s\n' "$files"
+          if printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/)'; then
+            echo "code=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "code=false" >>"$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: changes
+    if: inputs.gradle && needs.changes.outputs.code == 'true'
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java }}
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          # Pull requests read the cache that main writes and never overwrite it.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - run: ./gradlew build
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports
+          path: "**/build/reports/tests/"
+          retention-days: 7
+
+  text:
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: UXPLIMA/.github
+          ref: ${{ inputs.tools-ref }}
+          path: .uxm-tools
+          persist-credentials: false
+      - run: |
+          py=python3; python --version >/dev/null 2>&1 && py=python
+          mv .uxm-tools "$RUNNER_TEMP/uxm-tools"
+          "$py" "$RUNNER_TEMP/uxm-tools/tools/check_text.py" .
+
+  title:
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: UXPLIMA/.github
+          ref: ${{ inputs.tools-ref }}
+          persist-credentials: false
+      - env:
+          TITLE: ${{ github.event.pull_request.title }}
+          SCOPES: ${{ inputs.scopes }}
+        run: |
+          py=python3; python --version >/dev/null 2>&1 && py=python
+          # shellcheck disable=SC2086 # the scopes are meant to split into arguments
+          "$py" tools/check_title.py "$TITLE" $SCOPES
+
+  required:
+    if: always()
+    needs: [changes, build, text, title]
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions: {}
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac
