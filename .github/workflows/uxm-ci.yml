@@ -68,7 +68,8 @@ jobs:
           printf '%s\n' "$files"
           # A here-string, not a pipe: grep -q exits at the first match, and with pipefail
           # the printf it cut off would turn a long list into code=false.
-          if grep -qvE '(\.md$|^docs/)' <<<"$files"; then
+          # A release pull request changes only CHANGELOG.md and the release-please manifest.
+          if grep -qvE '(\.md$|^docs/|^\.release-please-manifest\.json$)' <<<"$files"; then
             echo "code=true" >>"$GITHUB_OUTPUT"
           else
             echo "code=false" >>"$GITHUB_OUTPUT"
