@@ -128,10 +128,10 @@ A repository's `ci.yml` calls the reusable workflows in `UXPLIMA/.github`.
 
 ## Releases
 
-- Semantic Versioning, tags `vX.Y.Z`, managed by release-please from the conventional commits.
+- Semantic Versioning, tags `<repository>-vX.Y.Z`, managed by release-please from the conventional commits.
 - Versions stay below 1.0.0 while the API or the configuration format still changes. A breaking change carries `!` and a `BREAKING CHANGE:` footer; before 1.0.0 it bumps the minor.
 - For a plugin, breaking means an operator must edit a file or loses data. Configuration and storage migrations exist so that this is rare.
-- Before merging a release pull request, its changelog entry is rewritten for operators: Added, Changed, Fixed, Removed. Internal refactors and tests are left out.
+- Before merging a release pull request, its changelog entry is rewritten for operators: Added, Changed, Fixed, Removed. Internal refactors and tests are left out. The same entry replaces the notes in the pull request body, between its first and last lines, which release-please reads to cut the release.
 - A plugin release attaches the shaded jar and a `SHA256SUMS` file to the GitHub release. uxmLib and `uxm-gradle` publish to `repo.uxplima.com`.
 - Every repository restarts at `0.0.1` when it migrates to this standard.
 
