@@ -8,7 +8,7 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.{kts,yml,yaml,json,conf,md}]
+[*.{yml,yaml,json,conf,md}]
 indent_size = 2
 
 [*.{bat,cmd,ps1}]
