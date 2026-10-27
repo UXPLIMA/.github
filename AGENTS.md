@@ -19,7 +19,7 @@ python tools/sync.py --check <repo>                    # a repository's synced f
 ## Invariants
 
 - Every action in a workflow is pinned by commit SHA with its version in a comment.
-- Workflows set `permissions: {}` at the top and grant each job what it needs, and set `defaults.run.shell: bash` so the same steps run on the Windows runner.
+- Workflows set `permissions: {}` at the top and grant each job what it needs, and set `defaults.run.shell: bash`.
 - The tools use the Python standard library only, so CI needs no install step.
 
 ## Testing
