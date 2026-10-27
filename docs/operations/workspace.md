@@ -44,27 +44,26 @@ Folders carry their GitHub repository names.
 
 ## Server setups
 
-A setup is a repository (`UXPLIMA/setup-<name>`, private) that describes a server network; a running server is built from it and is never committed.
+A setup is a repository (`UXPLIMA/setup-<name>`, private) that describes a server network; a running server is assembled from it and is never committed.
 
 ```
 setup-uxm-lobby/
   AGENTS.md  CLAUDE.md  README.md
-  setup.yml                    Paper and Velocity builds, plugin list with exact versions, servers and ports
-  proxy/                       velocity.toml and proxy plugin configs
-  servers/<server>/            server.properties, paper configs, plugins/<Plugin>/ configs
+  setup.toml                   servers, exact jars with sha256, backup location
+  servers/<server>/            server.properties, platform configs, plugins/<Plugin>/ configs
   secrets.example.env          every secret the setup needs, with empty values
+  tools/up.py  tools/backup.py
 ```
 
-- `tools/up.sh <setup>` (in the setup repository) builds `run/<setup>/`: downloads Paper and Velocity, fetches each plugin jar from its GitHub release and checks `SHA256SUMS`, copies configs, restores the worlds from the latest local backup, fills secrets from an untracked `.env`.
-- Worlds never enter git or a GitHub release. They live in `run/<setup>/` and are backed up on the owner's PC under `C:\Users\pc\uxm-backups\<setup>\<server>\`, outside the workspace. `tools/backup.sh <setup>` writes one archive per run and keeps the last five.
-- Secrets (`forwarding.secret`, database passwords, webhook URLs) never enter git. Config files reference them through placeholders that `up.sh` fills.
-- `tools/deploy.sh <setup> <host>` pushes a built setup to a server over SSH and keeps one previous copy for rollback, not one per run.
+- `python tools/up.py` builds `run/<setup>/`: it restores the newest state backup, copies the configs over it with every `{{secret.NAME}}` filled from an untracked `.env`, and places every jar after checking its sha256. A jar comes from its release, or from the imported final copy of the old setup until it has one.
+- State (worlds, plugin databases, keys, operators and whitelist) never enters git. It is backed up on the owner's PC under `~/uxm-backups/<setup>/<server>/state-<yyyymmdd-hhmm>.tar.gz`, outside the workspace. `python tools/backup.py` writes one archive per run with the servers stopped and keeps the newest five.
+- Secrets (`forwarding.secret`, database passwords, webhook URLs) never enter git. `${NAME}` stays a HOCON substitution that plugins read themselves.
 
-The final `uxm-lobby` from `/home/uxm-setups/uxm-setups/setups/uxm-lobby` (3.6 GB) is imported once: configs into the repository, worlds into the first local backup, jars dropped in favor of released versions.
+The final `uxm-lobby` of the old server is kept untouched under `~/uxm-backups/uxm-lobby/final/`: its configs are the repository, its state the first backup.
 
-## CI runner
+## CI runners
 
-The GitHub Actions self-hosted runner runs on this PC as a Windows service, registered to the UXPLIMA organization with the labels `self-hosted, uxplima`. It needs Temurin 25, Git for Windows (bash) and Docker Desktop (the `real-database` tests start MySQL, MariaDB and PostgreSQL containers). Private repositories queue their CI while the PC is off.
+CI of private repositories runs on the organization's self-hosted Linux runners (`uxplima-runner-1` to `-3`, labels `self-hosted, uxplima`), three machines of their own, separate from the development server. They cost nothing. GitHub-hosted runners are used only by public repositories, for which they are free.
 
 ## Claude setup
 
@@ -75,15 +74,13 @@ The GitHub Actions self-hosted runner runs on this PC as a Windows service, regi
 
 ## Order of work
 
-1. Create `UXPLIMA/uxplima-org` and `UXPLIMA/.github`, land the three documents, the text check and the reusable workflows.
-2. Create `UXPLIMA/uxm-gradle` with the convention plugins and catalog, extracted from the current `buildSrc` and `libs.versions.toml`.
-3. Import `uxm-lobby` into `UXPLIMA/setup-uxm-lobby`.
-4. Register the self-hosted runner on this PC and move CI off the old server.
-5. Migrate uxmLib, then `uxm-plugin-template` as the pilot, then the plugins in groups. Each migration deletes the repository's whole test suite and restarts its version at `0.0.1`; new tests follow in later pull requests.
+1. `UXPLIMA/uxplima-org`, `UXPLIMA/.github` and `UXPLIMA/setup-uxm-lobby`, with the standards, the checks and the shared workflow.
+2. `UXPLIMA/uxm-gradle` with the convention plugins and catalog, extracted from the current `buildSrc` and `libs.versions.toml`.
+3. uxmLib, then `uxm-plugin-template` as the pilot, then the plugins in groups. Each migration deletes the repository's whole test suite and restarts its version at `0.0.1`; new tests follow in later pull requests.
 
 ## Left to the builder
 
 - Exact SHA pins, action versions and Gradle plugin versions.
 - The text check's implementation and its precise patterns.
 - The ArchUnit rule set, kept to dependency direction and the forbidden APIs.
-- How `up.sh` downloads Paper and Velocity builds (their download APIs).
+- How `up.py` downloads released jars once plugins and the server have releases.
