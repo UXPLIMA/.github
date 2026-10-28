@@ -150,6 +150,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - Window title: centered with `MenuTitles.centre`, no color, no bold, no decoration.
 - A tile's display name is a single space; its title is the first lore line. Lore order: title, category, blank, description, blank, details, blank, click hint. Built with `Tiles` and `LoreWrap`.
 - Navigation: `← previous page` and `→ next page` on arrows, `« back` on a feather, page counter muted. No close button. Glyphs are part of the catalog line.
+- Navigation sits in the middle of the bottom row: `« back` in the centre slot, `← previous page` directly left of it, `→ next page` directly right of it (slots 48, 49 and 50 in six rows, 21, 22 and 23 in three). The arrows are drawn on every page, and one with no page to go to does nothing. A menu with nothing to go back to leaves the centre to the frame, and no other button takes these three slots.
 - Materials carry meaning (money a gold ingot, danger TNT). No decorative heads, no glow except as a selected state. Empty slots take a gray pane with a hidden tooltip and no sound.
 - A destructive action asks once, in one confirm window, on Java and Bedrock alike.
 - Sounds: open, click, page and denied come from `menu.sounds` in `config.conf` through `MenuSoundsFile`; volume 0.5 to 0.7. A button with its own sound plays only that.
