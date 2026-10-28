@@ -40,14 +40,14 @@ setups/                        UXPLIMA/uxplima-org: workspace root, holds no pro
   run/<setup>/                 ignored: a running server assembled from a setup
 ```
 
-Folders carry their GitHub repository names.
+Folders carry their GitHub repository names; a setup's folder drops the `-setup` suffix.
 
 ## Server setups
 
-A setup is a repository (`UXPLIMA/setup-<name>`, private) that describes a server network; a running server is assembled from it and is never committed.
+A setup is a repository (`UXPLIMA/<name>-setup`, private, checked out at `setups/<name>/`) that describes a server network. Its name follows the product it ships, so `uxm-lobby` lives in `uxm-lobby-setup`; a running server is assembled from it and is never committed.
 
 ```
-setup-uxm-lobby/
+uxm-lobby-setup/
   AGENTS.md  CLAUDE.md  README.md
   setup.toml                   servers, exact jars with sha256, backup location
   servers/<server>/            server.properties, platform configs, plugins/<Plugin>/ configs
@@ -74,7 +74,7 @@ CI of private repositories runs on the organization's self-hosted Linux runners 
 
 ## Order of work
 
-1. `UXPLIMA/uxplima-org`, `UXPLIMA/.github` and `UXPLIMA/setup-uxm-lobby`, with the standards, the checks and the shared workflow.
+1. `UXPLIMA/uxplima-org`, `UXPLIMA/.github` and `UXPLIMA/uxm-lobby-setup`, with the standards, the checks and the shared workflow.
 2. `UXPLIMA/uxm-gradle` with the convention plugins and catalog, extracted from the current `buildSrc` and `libs.versions.toml`.
 3. uxmLib, then `uxm-plugin-template` as the pilot, then the plugins in groups. Each migration deletes the repository's whole test suite and restarts its version at `0.0.1`; new tests follow in later pull requests.
 
