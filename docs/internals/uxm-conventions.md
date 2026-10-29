@@ -139,14 +139,30 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 ## Placeholders
 
 - Registered through uxmLib's PlaceholderAPI integration, only when PlaceholderAPI is present.
-- Format: `%uxm_<plugin>_<path>%`, lower case, `_` between words: `%uxm_crates_keys_<crate>%`, `%uxm_jobs_level_<job>%`.
+- Format: `%uxm<plugin>_<path>%`, the plugin's name in lower case with no separator, then `_` between words: `%uxmcrates_keys_<crate>%`, `%uxmjobs_level_<job>%`.
 - A provider answers for an `OfflinePlayer`. A value that needs an online player returns the configured empty value for an offline one.
 - A number is returned raw; `_formatted` returns it formatted for display: `%uxm_jobs_points%`, `%uxm_jobs_points_formatted%`.
 - Every placeholder whose value is text a player reads (a tag, a title, a name with a language key) also answers as a relational placeholder, `%rel_<plugin>_<path>%`, in the reader's language. Other plugins show it in chat, the tab list and nametags, which are drawn for each reader.
 - A placeholder never returns null and never throws. An unknown path returns empty.
 - A placeholder never does I/O. It reads cached state; a cache miss returns the empty value and loads in the background.
-- Leaderboards: `%uxm_<plugin>_top_<board>_<rank>_name%` and `_value`.
+- Leaderboards: every plugin with a board answers the same grammar, below.
 - Every placeholder is listed in `docs/user/` with an example value.
+
+## Leaderboards
+
+A board ranks players by one value (kills, jumps, keys opened) over a period. Every plugin with boards keeps this shape, so a hologram, a scoreboard or a menu line written for one works for all of them.
+
+- Periods: `alltime`, `monthly`, `weekly`, `daily`. All time never resets; the others reset at the start of their window in `leaderboard.time-zone`, a week starting on `leaderboard.week-starts`.
+- Placeholders, with `<board>` the board's id and `<n>` a place from 1:
+  - `%uxm<plugin>_top_<board>_<period>_<n>_name%`, `_value` and `_head`: place `n`.
+  - `%uxm<plugin>_rank_<board>_<period>%`: the reader's own place; `%uxm<plugin>_value_<board>_<period>%`: their own value.
+  - `%uxm<plugin>_resets_<period>%`: the time until the period starts again, in the reader's words (days and hours, hours and minutes, or minutes).
+- A place nobody holds still answers: the name is the catalogue's word for nobody, the value and a missing rank the word for none, and the head `leaderboard.empty-head`, so a `<head:...>` tag around it always draws. `resets` answers the word for none for `alltime`.
+- `value` is the value as the board shows it: a count is a plain number, a time is the time in the reader's words.
+- A head is the player's name when an account can have that name, else their uuid, which every `<head:...>` tag takes.
+- The places come from a snapshot kept in memory and rebuilt on the async lane; a placeholder never reads the database. The reader's own value is read from their loaded record, so a record set since the last rebuild counts at once.
+- Config, under `leaderboard`: `size` (places kept per board and period), `refresh-seconds`, `periods` (which are kept; empty keeps all four), `time-zone`, `week-starts`, `keep-windows` (how many past windows stay in storage), `empty-head`, and `chat-lines` where a chat `top` command prints a page.
+- A player command `top [board] [period]` shows a board; an admin `reset <player>` takes a player off every board.
 
 ## Menus
 
