@@ -83,6 +83,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - One `PluginSettings` class reads every file into immutable records. Nothing else reads a path by string.
 - The snapshot is read on enable and on reload, then swapped whole. A parse error on reload keeps the previous snapshot and logs the file, line and reason.
 - On every start `PluginSettings.bringUpToDate` merges keys a release added into the operator's file, keeps every value the operator wrote, and writes `config.conf.bak` first. There is no `config-version` key.
+- A map whose keys the operator chooses (groups, ranks, currencies, worlds, materials, levels, macros) is named in `PluginSettings.OPERATOR_LISTS` and passed to `mergeDefaults`. Once the operator's file has such a map, it is theirs whole: a shipped example they removed is never put back. A map whose keys the plugin defines (moments, token kinds, claim providers) is not on the list, so a key a release adds still arrives; it is turned off with `enabled = false` or `false`, not by removing it. A shipped example that comes back after an operator removed it is a defect, and a test removes one and checks it stays gone.
 - Language files are kept current with `LanguageFileUpdates.bringUpToDate`: an untouched shipped line takes the new wording, an edited line stays the operator's.
 - `/<root> reload` reloads every file in one step and reports what changed or failed.
 
