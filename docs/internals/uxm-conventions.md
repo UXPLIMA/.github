@@ -152,6 +152,9 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 
 A board ranks players by one value (kills, jumps, keys opened) over a period. Every plugin with boards keeps this shape, so a hologram, a scoreboard or a menu line written for one works for all of them.
 
+- Engine: every board runs on uxmLib's `uxmlib-board`. A plugin declares its boards (`Board.counter`, `Board.record`, `Board.snapshot`) and wires `Leaderboard`, `Standings`, `BoardRecorder`, `BoardPresence` and `BoardAnswers` over its own tables; it never keeps a board engine of its own. An event is added in the database, so a player who is not loaded, or who plays on another server, still counts.
+- Kinds: a counter adds up what happened in each period, a record keeps the best in each period, and a snapshot is who is ahead now (a level, a balance), read from the plugin's own cache. A snapshot offers `alltime` only; a counter whose all time is a level or a balance takes that snapshot with `withAllTime`.
+- A board's id is 1 to 32 of `a-z`, `0-9`, `-` and `_`. A key is read from its end: the field, the place and the period are its last parts and the board is everything before them, so an id may hold an underscore.
 - Periods: `alltime`, `monthly`, `weekly`, `daily`. All time never resets; the others reset at the start of their window in `leaderboard.time-zone`, a week starting on `leaderboard.week-starts`.
 - Placeholders, with `<board>` the board's id and `<n>` a place from 1:
   - `%uxm<plugin>_top_<board>_<period>_<n>_name%`, `_value` and `_head`: place `n`.
