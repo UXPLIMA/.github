@@ -103,6 +103,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - `language { default, follow-client, force }` in `config.conf`. Order: forced language, the player's choice, the client language while `follow-client` is on, the default.
 - The player's choice is shared across all UXM plugins through uxmLib `SharedLanguage` (`uxmlib:language`). Nothing else reads `player.locale()`.
 - Player-facing wording is English or Turkish written for the player, short sentences, active voice.
+- Everything the shipped config names that a player reads the name of (a lobby, a crate, a job) is named in every shipped language file, and a test fails when one is missing. A Turkish file, comments included, is written in Turkish letters.
 - Text is drawn in the language of the player who reads it, not of the player it is about. A line many players read that holds language text (a tag, a channel name) is drawn once per reader language, not once for everybody, and a line sent to another server carries one drawing per language.
 
 ### Look
