@@ -19,6 +19,11 @@ SKIPPED_DIRS = {".git", "vendor", "build", ".gradle", "node_modules", "run", ".i
 ROOT_MARKDOWN = {"README.md", "AGENTS.md", "CLAUDE.md", "CHANGELOG.md", "profile/README.md"}
 DOC_FOLDERS = ("docs/user/", "docs/internals/", "docs/operations/")
 FREE_FOLDERS = (".agents/", ".github/")
+# Markdown a product ships as data (sample pages a documentation product serves), not documentation.
+CONTENT_FOLDER = "content/"
+# A README next to one of these is the page a package registry shows for a published package.
+PACKAGE_MANIFESTS = ("package.json", "pyproject.toml", "build.gradle.kts", "Cargo.toml", "pom.xml")
+NOTICE = re.compile(r"^(LICENSE|NOTICE|THIRD_PARTY_NOTICES)([.-].*)?$")
 # Release tooling writes the changelog; its dates and wording are not ours to check.
 UNCHECKED_TEXT = {"CHANGELOG.md"}
 
@@ -113,16 +118,23 @@ def _read_text(file: Path) -> str | None:
         return None
 
 
-def _markdown_allowed(path: str) -> bool:
+def _markdown_allowed(root: Path, path: str) -> bool:
     name = PurePosixPath(path).name
-    if path in ROOT_MARKDOWN or path == "docs/README.md" or ("/" not in path and name.startswith("LICENSE")):
+    if path in ROOT_MARKDOWN or path == "docs/README.md" or NOTICE.match(name):
         return True
-    return path.startswith(DOC_FOLDERS) or path.startswith(FREE_FOLDERS)
+    if path.startswith(DOC_FOLDERS + FREE_FOLDERS + (CONTENT_FOLDER,)):
+        return True
+    return name == "README.md" and "/" in path and _is_package(root / path)
+
+
+def _is_package(readme: Path) -> bool:
+    folder = readme.parent
+    return any((folder / manifest).is_file() for manifest in PACKAGE_MANIFESTS) or any(folder.glob("*.csproj"))
 
 
 def _check_markdown_file(root: Path, path: str, text: str, lines: list[str]) -> list[Finding]:
     findings: list[Finding] = []
-    if not _markdown_allowed(path):
+    if not _markdown_allowed(root, path):
         findings.append(Finding(path, 1, "files", "documentation file the standard does not allow"))
     if path == "CLAUDE.md" and text.replace("\r\n", "\n").strip() != "@AGENTS.md":
         findings.append(Finding(path, 1, "claude-md", "CLAUDE.md must be exactly @AGENTS.md"))

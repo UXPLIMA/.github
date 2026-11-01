@@ -1,10 +1,10 @@
 # Repository standard
 
-How every repository of the UXPLIMA organization is laid out, documented, tested and changed. It applies to plugins, uxmLib, the build tooling and the server setups. How a plugin behaves for players and operators is in [uxm-conventions.md](../internals/uxm-conventions.md).
+How every repository of the UXPLIMA organization is laid out, documented, tested and changed. It applies to plugins, uxmLib, the build tooling, the server setups, the web products and the Discord bots. How a plugin behaves for players and operators is in [uxm-conventions.md](../internals/uxm-conventions.md).
 
 The model is the Rawframe Project standard, itself modeled on [pingdotgg/t3code](https://github.com/pingdotgg/t3code). Sources are listed at the end.
 
-Contents: [Principles](#principles) · [Files](#files) · [AGENTS.md](#agentsmd) · [Documentation](#documentation) · [Tests](#tests) · [Build](#build) · [Continuous integration](#continuous-integration) · [Changes](#changes) · [Releases](#releases) · [Work](#work) · [Enforcement](#enforcement) · [Migrating a repository](#migrating-a-repository)
+Contents: [Principles](#principles) · [Files](#files) · [AGENTS.md](#agentsmd) · [Documentation](#documentation) · [Tests](#tests) · [Build](#build) · [Node products](#node-products) · [Continuous integration](#continuous-integration) · [Changes](#changes) · [Releases](#releases) · [Work](#work) · [Enforcement](#enforcement) · [Migrating a repository](#migrating-a-repository)
 
 ## Principles
 
@@ -101,6 +101,18 @@ Rules that can be checked statically belong to a tool, not a test: the single Ar
 - Versions come from the shared `uxm` version catalog published by `uxm-gradle`. A repository adds its own catalog entries only for dependencies no other repository uses.
 - `./gradlew build` runs everything CI runs: formatting, compile with checks, tests, jar verification.
 - `./gradlew runServer` starts a local Paper server with the plugin, under `run/` in the repository, ignored by git.
+
+## Node products
+
+The web products (`uxw-*`) and the Discord bots (`uxd-*`) are TypeScript on Node.js, with Next.js for every screen. The rules above hold for them; these replace the Gradle specifics.
+
+- **Build.** npm with the lockfile committed and `.nvmrc` naming the Node version. `npm run check` runs everything CI runs: formatting, the repository checks, typecheck, lint and the production build.
+- **Repository checks.** A few `scripts/check-*.mjs` scripts, run by `npm run policy`, hold the invariants lint cannot see: sealed migrations, a declared caller for every route, a guard on every server action, locale parity and dead exports. A new check is added only for a rule that has already been broken once.
+- **Tests.** The suites were deleted when each product migrated. A new test follows [Tests](#tests), runs on `node:test` through `npm test`, and is written only for logic, data, protocol or security behavior a change depends on. A change is otherwise proven by running the product and saying what was run.
+- **Next.js.** Every `next.config` sets `agentRules: false`, so `next dev` does not write its own block into `AGENTS.md`.
+- **Shared family code.** `packages/security`, `packages/logging` and the repository check scripts are the same in every product of the family. A change to one of them is made in all of them.
+- **Continuous integration.** `ci.yml` calls `uxm-ci.yml` with `gradle: false` for the change detection, text and title checks, adds a `check` job (`npm ci`, `npm run check`, the dependency audit and compose validation) and the container image builds, and ends with its own `required` job that needs all of them.
+- **Releases.** Tags are `vX.Y.Z`. Publishing a release builds the container images and pushes them to GHCR, from where they are deployed. These products keep their version numbers instead of restarting at `0.0.1`: installations and image tags are ordered by version, and a restart would sort the new images below the ones already running.
 
 ## Continuous integration
 
