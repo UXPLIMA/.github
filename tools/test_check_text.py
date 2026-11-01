@@ -50,6 +50,22 @@ class CheckTextTest(unittest.TestCase):
         self.write(".github/pull_request_template.md", "## Problem\n")
         self.assertEqual(self.rules(), [])
 
+    def test_published_package_readme_allowed(self):
+        self.write("sdk/node/package.json", "{}\n")
+        self.write("sdk/node/README.md", "# Client\n")
+        self.write("sdk/dotnet/Client/Client.csproj", "<Project />\n")
+        self.write("sdk/dotnet/Client/README.md", "# Client\n")
+        self.assertEqual(self.rules(), [])
+
+    def test_readme_without_a_package_fails(self):
+        self.write("deploy/README.md", "# Deploy\n")
+        self.assertEqual(self.rules(), ["files"])
+
+    def test_notices_and_content_allowed(self):
+        self.write("engine/THIRD_PARTY_NOTICES.md", "# Notices\n")
+        self.write("content/sample/index.md", "# Sample\n")
+        self.assertEqual(self.rules(), [])
+
     def test_organization_profile_allowed(self):
         self.write("profile/README.md", "# Org\n")
         self.assertEqual(self.rules(), [])
