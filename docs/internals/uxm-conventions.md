@@ -62,13 +62,15 @@ The plugin runs on Paper and on Folia, so there is no main thread to rely on.
 | File | Holds |
 |---|---|
 | `config.conf` | behavior: switches, numbers, slots, materials, sounds, the `storage` and `language` blocks |
+| `<block>.conf` | a feature too large for `config.conf` (`protection.conf`, `economy.conf`), holding its block under the same name |
 | `commands.conf` | name, aliases, localized aliases and enabled state of every command and subcommand |
 | `messages/messages_<tag>.conf` | every word a player reads; `en` and `tr` ship complete |
 | `menus/<name>.conf` | one file per menu: layout, items, actions |
-| content files (`crates.conf`, `jobs/<id>.conf`) | operator content: the things the plugin is about |
+| content files (`crates.conf`, `jobs/<id>.conf`, `kit.conf`, `lobbies.conf`) | operator content: the things the plugin is about |
+| `<list>/<tag>.txt`, `<list>/<tag>.conf` | word lists and questions, one file per language in a folder named for their kind (`swears/tr.txt`, `trivia/en.conf`) |
 | `plugins/uxmTheme/theme.conf` | the shared palette and roles; the only file with a hex code |
 
-A word in `config.conf` is a defect, and a slot number in `messages/` is a defect. Words an operator authors (a warp label, a crate name) stay with their content, and every such field also takes a catalog line: a value that starts with `@` (`display = "@custom.tag.vip"`) names a line of the messages files and is drawn in each reader's language through `Messages.expandLine`. A field that shows text to players and cannot take `@` is a defect.
+A word in `config.conf` is a defect, and a slot number in `messages/` is a defect. Words an operator authors (a warp label, a crate name) stay with their content, and every such field also takes a catalog line: a value that starts with `@` (`display = "@custom.tag.vip"`) names a line of the messages files and is drawn in each reader's language through `Messages.expandLine`. A field that shows text to players and cannot take `@` is a defect. Shipped content writes its words as `@` lines with a line in every language file, so a server in another language translates one file, not every content file; a test checks that every `@` line the shipped content names is in every language file.
 
 ### Format
 
@@ -77,12 +79,15 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - Every block opens with a comment that says what it does and what a wrong value causes. Comments give ranges and consequences (`# 1 to 6. Higher values cost more memory.`), never types.
 - Every default works: a fresh server starts without an edit. A value only the operator can fill (a webhook URL) ships empty with a comment.
 - No secret, no absolute path, no value duplicated across files.
+- One name for one thing in every plugin: `effects` for the action lines an event runs, `visuals` for how something looks, `leaderboard`, `time-zone`, `network.server-name` for this backend's name on the network. A plugin that renames a key or a block moves the operator's old one on the next start, value and comment kept, and a test covers the move.
+- A feature block that grows past about a hundred lines with its comments moves to `<block>.conf` beside `config.conf`, under the same block name, so every key keeps its path. Content the operator owns whole (a kit, a lobby list) is never in `config.conf`. A block an earlier release kept in `config.conf` moves out as text, with its comment, on the first start.
+- A shipped file speaks to the server owner. It never names a source file, a `.md`, AGENTS or CLAUDE, a TODO, a developer, or another product to compare with.
 
 ### Code
 
 - One `PluginSettings` class reads every file into immutable records. Nothing else reads a path by string.
 - The snapshot is read on enable and on reload, then swapped whole. A parse error on reload keeps the previous snapshot and logs the file, line and reason.
-- On every start `PluginSettings.bringUpToDate` merges keys a release added into the operator's file, keeps every value the operator wrote, and writes `config.conf.bak` first. There is no `config-version` key.
+- On every start `PluginSettings.bringUpToDate` merges keys a release added into the operator's file, keeps every value the operator wrote, and writes `config.conf.bak` first. Each `<block>.conf` is merged the same way; a content file the operator owns whole is never merged. There is no `config-version` key.
 - A map whose keys the operator chooses (groups, ranks, currencies, worlds, materials, levels, macros) is named in `PluginSettings.OPERATOR_LISTS` and passed to `mergeDefaults`. Once the operator's file has such a map, it is theirs whole: a shipped example they removed is never put back. A map whose keys the plugin defines (moments, token kinds, claim providers) is not on the list, so a key a release adds still arrives; it is turned off with `enabled = false` or `false`, not by removing it. A shipped example that comes back after an operator removed it is a defect, and a test removes one and checks it stays gone.
 - Language files are kept current with `LanguageFileUpdates.bringUpToDate`: an untouched shipped line takes the new wording, an edited line stays the operator's.
 - `/<root> reload` reloads every file in one step and reports what changed or failed.
