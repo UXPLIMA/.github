@@ -127,6 +127,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 
 - Built with uxmLib's annotation DSL on Paper's Brigadier lifecycle. Each handler is `@FromConfig`, never also `@Command`.
 - One root per plugin, named after the plugin (`/uxmcrates`), plus a short alias in the shipped `commands.conf` (`/crates`). Every command and subcommand is renameable, aliasable, disableable and takes localized aliases from `commands.conf`.
+- A command word is written in its language's own letters (`/yardım`, `/règles`, `/правила`); any letter of any script is a valid word. A plain-letter spelling kept for keyboards without those letters goes in the setup's `tab-completion.hidden`, so it runs but the command list does not show it twice. A line that names a command names the reader's own word.
 - Subcommand names are one lower-case word, a verb where the branch acts (`give`, `reset`) and a noun where it lists or opens (`list`, `menu`).
 - The root always runs: it opens the menu, shows the list, or sends one line that points to help. Every intermediate word runs too. A player never sees Brigadier's own error text.
 - Standard admin branches in every plugin: `reload`, `lang set-player <player> <tag>`, `lang reset-player <player>`, and `help`.
