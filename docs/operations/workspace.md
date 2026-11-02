@@ -63,7 +63,7 @@ The final `uxm-lobby` of the old server is kept untouched under `~/uxm-backups/u
 
 ## CI runners
 
-CI of private repositories runs on the organization's self-hosted Linux runners (`uxplima-runner-1` to `-3`, labels `self-hosted, uxplima`), three machines of their own, separate from the development server. They cost nothing. GitHub-hosted runners are used only by public repositories, for which they are free.
+CI of private repositories runs on the organization's self-hosted Linux runner (`uxplima-runner-1`, labels `self-hosted, uxplima`), a machine of its own, separate from the development server. It costs nothing. GitHub-hosted runners are used only by public repositories, for which they are free.
 
 ## Claude setup
 
