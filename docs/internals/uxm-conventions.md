@@ -118,6 +118,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - A chat line is `<tag:'FEATURE'> <body>sentence with a <value>value</value>.`: one bold feature word, the `▶` separator, white body, at most three colored spans, no result glyph.
 - Lines that are embedded elsewhere (list rows, help lines, formats, placeholder output) carry no prefix.
 - The interface is written in small capitals through `Typography`, for the languages `theme.conf` names. Values a player wrote are never converted.
+- A placeholder is inserted after `Typography` runs, so its value keeps ordinary letters. When the value is the interface talking rather than a player (a language, category, state or kind name from a config or the catalogue), the file wraps it: `<caps><language></caps>`. A player's name, a world, a number or an id stays unwrapped.
 
 ## Commands
 
