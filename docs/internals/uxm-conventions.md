@@ -91,6 +91,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - A map whose keys the operator chooses (groups, ranks, currencies, worlds, materials, levels, macros) is named in `PluginSettings.OPERATOR_LISTS` and passed to `mergeDefaults`. Once the operator's file has such a map, it is theirs whole: a shipped example they removed is never put back. A map whose keys the plugin defines (moments, token kinds, claim providers) is not on the list, so a key a release adds still arrives; it is turned off with `enabled = false` or `false`, not by removing it. A shipped example that comes back after an operator removed it is a defect, and a test removes one and checks it stays gone.
 - Language files are kept current with `LanguageFileUpdates.bringUpToDate`: an untouched shipped line takes the new wording, an edited line stays the operator's.
 - `/<root> reload` reloads every file in one step and reports what changed or failed.
+- Every reader of a setting reads the swapped snapshot: a listener, a cached rule set or a published check never keeps the one it was built with, and what players already see (a command list, a tab list) is sent again. A setting that cannot change for a player already online, such as one sent once at connect, is named in the reload report as waiting for a restart.
 
 ## Messages and style
 
