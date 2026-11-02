@@ -110,6 +110,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - Player-facing wording is English or Turkish written for the player, short sentences, active voice.
 - Everything the shipped config names that a player reads the name of (a lobby, a crate, a job) is named in every shipped language file, and a test fails when one is missing. A Turkish file, comments included, is written in Turkish letters.
 - Text is drawn in the language of the player who reads it, not of the player it is about. A line many players read that holds language text (a tag, a channel name) is drawn once per reader language, not once for everybody, and a line sent to another server carries one drawing per language.
+- A setup's own lines (the `custom.*` keys it adds to a catalogue for holograms, boards, the tab list, boss bars and menus) are written in every language the setup offers, not only in English and Turkish. A line missing from one file falls back to English in front of that player.
 
 ### Look
 
@@ -118,6 +119,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - A chat line is `<tag:'FEATURE'> <body>sentence with a <value>value</value>.`: one bold feature word, the `▶` separator, white body, at most three colored spans, no result glyph.
 - Lines that are embedded elsewhere (list rows, help lines, formats, placeholder output) carry no prefix.
 - The interface is written in small capitals through `Typography`, for the languages `theme.conf` names. Values a player wrote are never converted.
+- Every language written in Latin letters is one of those languages: `theme.conf`, or a plugin's own switch per catalogue such as uxmEssentials' `meta.small-caps`, turns small capitals on for each of them. Cyrillic, Chinese, Japanese and Korean keep their own letters.
 - A placeholder is inserted after `Typography` runs, so its value keeps ordinary letters. When the value is the interface talking rather than a player (a language, category, state or kind name from a config or the catalogue), the file wraps it: `<caps><language></caps>`. A player's name, a world, a number or an id stays unwrapped.
 
 ## Commands
