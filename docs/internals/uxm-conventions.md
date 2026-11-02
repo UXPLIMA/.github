@@ -180,6 +180,7 @@ A board ranks players by one value (kills, jumps, keys opened) over a period. Ev
 
 - A menu is a file under `menus/`, run by `uxmlib-menu`. Code registers what menus may say and do through `MenuBindings`; it does not build windows by hand.
 - Window title: centered with `MenuTitles.centre`, no color, no bold, no decoration.
+- The words over a tile's blocks (Description, Details) are plain words in the catalogue; the tile draws them in its own colour. Neither they nor a window title carry a colour tag, an `<h:...>` heading or bold, in any language file.
 - A tile's display name is a single space; its title is the first lore line. Lore order: title, category, blank, description, blank, details, blank, click hint. Built with `Tiles` and `LoreWrap`.
 - Navigation: `← previous page` and `→ next page` on arrows, `« back` on a feather, page counter muted. No close button. Glyphs are part of the catalog line.
 - Navigation sits in the middle of the bottom row: `« back` in the centre slot, `← previous page` directly left of it, `→ next page` directly right of it (slots 48, 49 and 50 in six rows, 21, 22 and 23 in three). The arrows are drawn on every page, and one with no page to go to does nothing. A menu with nothing to go back to puts the one button that undoes the player's choice in the centre (take the colour or the tag off), or leaves the centre to the frame when it has none. No other button takes these three slots.
