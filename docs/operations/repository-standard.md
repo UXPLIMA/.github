@@ -50,6 +50,7 @@ It never contains directory tours, file lists, feature lists, API descriptions, 
 
 ## Documentation
 
+- The buyer's manual on docs.uxplima.com follows [Published documentation](published-docs.md).
 - `docs/user/` follows the operator's task: install, configure, use, troubleshoot. One page per major feature. `docs/user/reference.md` lists every command, permission and placeholder.
 - `docs/internals/` holds one living page per topic. Each explains how a part works, why it is built that way, and the traps that are hard to see in the source. It links to source instead of copying it.
 - Most code changes need no documentation change. When a documented behavior changes, rewrite or delete the affected text in the same pull request. Never append a dated note or a second account.
