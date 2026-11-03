@@ -52,6 +52,7 @@ The plugin runs on Paper and on Folia, so there is no main thread to rely on.
 - Entity state is touched on that entity's scheduler, block and world state on the region scheduler of that location, global state (world time, broadcasts) on the global scheduler.
 - Database, file and network I/O run on the async scheduler, never on a region or entity thread.
 - An async task never calls the Bukkit API. It hops back with `scheduler.entity(...)` or `scheduler.region(...)` before it touches the world or a player.
+- A command dispatched as the console, including the `[console]` action line, runs on `scheduler.global(...)`. Folia refuses it from a region or entity thread, so a sink wired straight to `dispatchCommand` throws and the line does nothing.
 - Shared mutable state is an immutable snapshot behind a `volatile` field, swapped whole, or a concurrent collection. No `synchronized` around Bukkit calls.
 - A cache that another server can change is refreshed through `DataSynchronizers` (see [Storage](#storage)).
 
@@ -145,6 +146,8 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - Exemptions: `<plugin>.bypass.<rule>`, default `false`: `uxmchat.bypass.cooldown`.
 - Numeric limits: `<plugin>.limit.<thing>.<n>`, the highest granted `n` wins, the configured default applies without one: `uxmhomes.limit.homes.5`.
 - Every node is declared in `paper-plugin.yml` with a description and a default, and every node the code checks is declared. `<plugin>.admin` and `<plugin>.*` parents group them.
+- A wildcard node such as `<plugin>.admin.*` lists every node of its family under `children`. Without them it grants nothing on a server whose permission plugin does not expand wildcards itself.
+- A node built from content (a skill, a pass, a section) is declared by the plugin when it reads the file, with the default that content should have. Bukkit gives an undeclared node to every operator and to nobody else.
 - Permission checks go through one `Permissions` class of constants; no node string appears elsewhere.
 
 ## Placeholders
