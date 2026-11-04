@@ -133,6 +133,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - A command word is written in its language's own letters (`/yardım`, `/règles`, `/правила`); any letter of any script is a valid word. A plain-letter spelling kept for keyboards without those letters goes in the setup's `tab-completion.hidden`, so it runs but the command list does not show it twice. A line that names a command names the reader's own word.
 - Subcommand names are one lower-case word, a verb where the branch acts (`give`, `reset`) and a noun where it lists or opens (`list`, `menu`).
 - The root always runs: it opens the menu, shows the list, or sends one line that points to help. Every intermediate word runs too. A player never sees Brigadier's own error text.
+- Who may use a word is a uxmLib `Gate` (`Gate.permission`, `Gate.visibility`, `Gate.when`), never a native `requires` check. A gated word stays out of the command list and the completions of a player it refuses, and when typed it is answered with the catalog's no-permission line, or its unavailable line for a feature that is off. `requires` takes nothing but a gate; a native check makes the parser refuse with Brigadier's own text.
 - Standard admin branches in every plugin: `reload`, `lang set-player <player> <tag>`, `lang reset-player <player>`, and `help`.
 - Every command works from the console unless it needs a player, and says so with `@PlayerOnly`.
 - Arguments complete: player names, ids of the plugin's own content, numbers with their range.
