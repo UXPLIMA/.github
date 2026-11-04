@@ -91,6 +91,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - On every start `PluginSettings.bringUpToDate` merges keys a release added into the operator's file, keeps every value the operator wrote, and keeps a copy first in `backups/<name>-<yyyy-MM-dd-HHmmss>.conf` (uxmLib `ConfigBackups`, the last five of each file). Each `<block>.conf` is merged the same way; a content file the operator owns whole is never merged. There is no `config-version` key.
 - A map whose keys the operator chooses (groups, ranks, currencies, worlds, materials, levels, macros) is named in `PluginSettings.OPERATOR_LISTS` and passed to `mergeDefaults`. Once the operator's file has such a map, it is theirs whole: a shipped example they removed is never put back. A map whose keys the plugin defines (moments, token kinds, claim providers) is not on the list, so a key a release adds still arrives; it is turned off with `enabled = false` or `false`, not by removing it. A shipped example that comes back after an operator removed it is a defect, and a test removes one and checks it stays gone.
 - Language files are kept current with `LanguageFileUpdates.bringUpToDate`: an untouched shipped line takes the new wording, an edited line stays the operator's.
+- A key nothing reads is not shipped. An operator who changes it sees nothing happen; remove it from the file and its reader together.
 - `/<root> reload` reloads every file in one step and reports what changed or failed.
 - Every reader of a setting reads the swapped snapshot: a listener, a cached rule set or a published check never keeps the one it was built with, and what players already see (a command list, a tab list) is sent again. A setting that cannot change for a player already online, such as one sent once at connect, is named in the reload report as waiting for a restart.
 
@@ -123,6 +124,7 @@ A word in `config.conf` is a defect, and a slot number in `messages/` is a defec
 - The interface is written in small capitals through `Typography`, for the languages `theme.conf` names. Values a player wrote are never converted.
 - Every language written in Latin letters is one of those languages: `theme.conf`, or a plugin's own switch per catalogue such as uxmEssentials' `meta.small-caps`, turns small capitals on for each of them. Cyrillic, Chinese, Japanese and Korean keep their own letters.
 - A placeholder is inserted after `Typography` runs, so its value keeps ordinary letters. When the value is the interface talking rather than a player (a language, category, state or kind name from a config or the catalogue), the file wraps it: `<caps><language></caps>`. A player's name, a world, a number or an id stays unwrapped.
+- A word another plugin matches against its own text, or that a placeholder hands to another plugin's line (a click word, a button label), is read from the raw catalogue line, never drawn through `Typography`. In small capitals it no longer matches, and it shows up in small capitals inside someone else's text.
 
 ## Commands
 
