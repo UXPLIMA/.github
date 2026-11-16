@@ -54,7 +54,7 @@ The plugin runs on Paper and on Folia, so there is no main thread to rely on.
 - An async task never calls the Bukkit API. It hops back with `scheduler.entity(...)` or `scheduler.region(...)` before it touches the world or a player.
 - A command dispatched as the console, including the `[console]` action line, runs on `scheduler.global(...)`. Folia refuses it from a region or entity thread, so a sink wired straight to `dispatchCommand` throws and the line does nothing.
 - Shared mutable state is an immutable snapshot behind a `volatile` field, swapped whole, or a concurrent collection. No `synchronized` around Bukkit calls.
-- A cache that another server can change is refreshed through `DataSynchronizers` (see [Storage](#storage)).
+- A cache that another server can change is kept fresh as [Storage](#storage) describes, never by reading the database on a region or entity thread.
 
 ## Configuration
 
@@ -208,7 +208,12 @@ A board ranks players by one value (kills, jumps, keys opened) over a period. Ev
 - SQL every backend accepts: `DOUBLE PRECISION`, `SMALLINT`, no `IF NOT EXISTS` on indexes, no default on `TEXT`. Any order a player sees comes from an `ORDER BY`.
 - All queries use bound parameters (`Sql`, `SelectBuilder`). No string-built SQL.
 - All storage calls run async. Player data loads on join (async pre-login where possible) and saves on change or on a timer, and on quit.
-- A plugin whose rows another server can write uses `DataSynchronizers.forStore` with `storage.sync-seconds`.
+- A plugin whose rows another server can write keeps its caches fresh in one of two ways, never both:
+  - With no cross-server bus of its own, `DataSynchronizers.forStore` with `storage.sync-seconds`.
+  - With a cross-server bus (uxmEssentials), every change is announced on the bus, and a periodic full resync
+    (`network.cache-refresh-seconds`) is the safety net for a lost frame. A frame or a resync reloads off the tick
+    and swaps the cache whole. A polled message table would be a third transport and a runtime table outside the
+    migrations, so such a plugin does not use `DataSynchronizers.forStore`.
 - Every repository adapter is tested with `@EveryBackend` on all four backends.
 
 ## Rewards and effects
